@@ -87,6 +87,7 @@ public class AlbumExists
       return false;
     }
 
+    // we found the Picasa album
     return true;
   }
 }

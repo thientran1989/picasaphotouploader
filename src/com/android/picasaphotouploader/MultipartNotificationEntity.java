@@ -16,21 +16,23 @@
  */
 package com.android.picasaphotouploader;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
-import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.ByteArrayEntity;
 
 /**
- * Class to override FileEntity for HttpClient to progress upload monitoring
- * when uploading a file to Picasa
+ * Class to override ByteArrayEntity for HttpClient to write multipart related
+ * content and to progress upload monitoring for notification when uploading
+ * a file to Picasa
  *
  * @author Jan Peter Hooiveld
  */
-public class ProgressFileEntity extends FileEntity
+public class MultipartNotificationEntity extends ByteArrayEntity
 {
   /**
    * Upload notification
@@ -40,22 +42,27 @@ public class ProgressFileEntity extends FileEntity
   /**
    * Constructor
    * 
-   * @param file File to user
-   * @param contentType File mime-type
-   * @param notification Upload notification
+   * @param multipart Multipart class that creates the content
+   * @throws UnsupportedEncodingException
+   * @throws FileNotFoundException
+   * @throws IOException
    */
-  public ProgressFileEntity(final File file, final String contentType, UploadNotification notification)
+  public MultipartNotificationEntity(Multipart multipart, UploadNotification notification) throws UnsupportedEncodingException, FileNotFoundException, IOException
   {
-    super(file, contentType);
-    
+    // call parent to set content
+    super(multipart.getContent());
+
+    // add notification
     this.notification = notification;
+
+    // set content type
+    setContentType("multipart/related; boundary=\""+multipart.getBoundary()+"\"");
   }
 
   /**
-   * Writes file to http client outputstream. We watch for progress here and
-   * update upload notification by every 10 percent of increase
+   * Write content to outputstream of HttpClient
    *
-   * @param outstream Http client outputstream
+   * @param outstream Outputstreaam of the HttpClient
    * @throws IOException
    */
   @Override
@@ -67,12 +74,12 @@ public class ProgressFileEntity extends FileEntity
     }
 
     // create file input stream
-    InputStream instream = new FileInputStream(this.file);
-    
+    InputStream instream = new ByteArrayInputStream(this.content);
+
     try {
       // create vars
       byte[] tmp    = new byte[4096];
-      int total     = (int)this.file.length();
+      int total     = (int) this.content.length;
       int progress  = 0;
       int increment = 10;
       int l;
@@ -82,9 +89,9 @@ public class ProgressFileEntity extends FileEntity
       while ((l = instream.read(tmp)) != -1) {
         // check progress
         progress = progress + l;
-        percent  = Math.round(((float)progress / (float)total) * 100);
+        percent  = Math.round(((float) progress / (float) total) * 100);
 
-        // if progress exceeds increment update status notification
+        // if percent exceeds increment update status notification
         // and adjust increment
         if (percent > increment) {
           increment += 10;

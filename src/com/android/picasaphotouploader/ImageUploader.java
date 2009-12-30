@@ -88,24 +88,32 @@ public class ImageUploader implements Runnable
     HttpPost post                   = new HttpPost(url);
 
     try {
-      // new file and and entity to hold it and parameters
-      File file                 = new File(item.imagePath);
-      ProgressFileEntity entity = new ProgressFileEntity(file, item.imageType, notification);
-      HttpParams params         = client.getParams();
+      // new file and and entity
+      File file            = new File(item.imagePath);
+      Multipart multipart  = new Multipart("Media multipart posting", "END_OF_PART");
+
+      // create entity parts
+      multipart.addPart("<entry xmlns='http://www.w3.org/2005/Atom'><title>"+item.imageName+"</title><category scheme=\"http://schemas.google.com/g/2005#kind\" term=\"http://schemas.google.com/photos/2007#photo\"/></entry>", "application/atom+xml");
+      multipart.addPart(file, item.imageType);
+
+      // create new Multipart entity
+      MultipartNotificationEntity entity = new MultipartNotificationEntity(multipart, notification);
+
+      // get http params
+      HttpParams params = client.getParams();
 
       // set protocal and timeout for httpclient
       params.setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
       params.setParameter(CoreConnectionPNames.SO_TIMEOUT, new Integer(15000));
       params.setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, new Integer(15000));
 
-      // set body with upload entity and set content type of entity
+      // set body with upload entity
       post.setEntity(entity);
-      entity.setContentType(item.imageType);
 
       // set headers
       post.addHeader("Authorization", "GoogleLogin auth="+item.imageAuth);
       post.addHeader("GData-Version", "2");
-      post.addHeader("Slug", item.imageName);
+      post.addHeader("MIME-version", "1.0");
 
       // execute upload to picasa and get response and status
       HttpResponse response = client.execute(post);

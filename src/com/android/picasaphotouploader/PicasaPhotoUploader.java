@@ -17,11 +17,8 @@
 package com.android.picasaphotouploader;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -85,10 +82,10 @@ public class PicasaPhotoUploader extends Activity
    * @param parent
    */
   @Override
-  public void onCreate(Bundle parent)
+  public void onCreate(Bundle bundle)
   {
     // call parent
-    super.onCreate(parent);
+    super.onCreate(bundle);
 
     // set main layout screen
     setContentView(R.layout.main);
@@ -105,7 +102,8 @@ public class PicasaPhotoUploader extends Activity
     setMaxIdFromDatabase();
 
     // register camera observer
-    registerObserver();
+    camera = new ImageTableObserver(new Handler(), this, queue);
+    getContentResolver().registerContentObserver(Media.EXTERNAL_CONTENT_URI, true, camera);
   }
 
   /**
@@ -124,6 +122,7 @@ public class PicasaPhotoUploader extends Activity
       return true;
     }
 
+    // call parent function for other keys and events
     return super.onKeyDown(keyCode, event);
   }
 
@@ -169,7 +168,7 @@ public class PicasaPhotoUploader extends Activity
         break;
       // show license
       case MENU_LICENSE:
-        showLicense();
+        Utils.textDialog(this, "License Information", getString(R.string.license));
         break;
       // kill the queue, all running notifications and exit application
       // usual way is to use finish() but uploads will keep running otherwise
@@ -212,37 +211,5 @@ public class PicasaPhotoUploader extends Activity
   public int getMaxId()
   {
     return maxId;
-  }
-
-  /**
-   * Register camera observer
-   */
-  private void registerObserver()
-  {
-    ContentResolver cr = getContentResolver();
-    camera             = new ImageTableObserver(new Handler(), this, queue);
-
-    cr.registerContentObserver(Media.EXTERNAL_CONTENT_URI, true, camera);
-  }
-
-  /**
-   * Show GNU license info to user
-   */
-  private void showLicense()
-  {
-    new AlertDialog
-      .Builder(this)
-      .setMessage(getString(R.string.license))
-      .setTitle("License Information")
-      .setNeutralButton("OK",
-        new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which)
-          {
-            dialog.cancel();
-          }
-        }
-      )
-      .show();
   }
 }
