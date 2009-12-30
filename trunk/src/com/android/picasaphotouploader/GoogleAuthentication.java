@@ -101,6 +101,7 @@ public class GoogleAuthentication
       BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
       StringBuffer sb   = new StringBuffer();
       String line;
+      
       while ((line = br.readLine()) != null) {
         sb.append(line);
       }

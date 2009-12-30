@@ -81,7 +81,7 @@ public class UploadNotification extends Notification
       tickerText     = "Uploading: "+filename;
       flags         |= super.FLAG_ONGOING_EVENT;
       contentView    = new RemoteViews(context.getPackageName(), R.layout.upload);
-      Intent intent  = new Intent(context, PicasaPhotoUploader.class);
+      Intent intent  = new Intent(context, this.getClass());
       contentIntent  = PendingIntent.getActivity(context, 0, intent, 0);
 
       // set fields in the custom view
@@ -124,8 +124,9 @@ public class UploadNotification extends Notification
   {
     try {
       // change flags and icon
-      flags =~ Notification.FLAG_ONGOING_EVENT;
-      icon  = android.R.drawable.stat_sys_upload_done;
+      flags  =~ Notification.FLAG_ONGOING_EVENT;
+      flags += Notification.FLAG_AUTO_CANCEL;
+      icon   = android.R.drawable.stat_sys_upload_done;
 
       // set fields in the custom view
       contentView.setImageViewResource(R.id.uploadImage, android.R.drawable.stat_sys_upload_done);
@@ -145,8 +146,9 @@ public class UploadNotification extends Notification
   {
     try {
       // change flags and icon
-      flags =~ Notification.FLAG_ONGOING_EVENT;
-      icon  = android.R.drawable.stat_sys_warning;
+      flags  =~ Notification.FLAG_ONGOING_EVENT;
+      flags += Notification.FLAG_AUTO_CANCEL;
+      icon   = android.R.drawable.stat_sys_warning;
 
       // set fields in the custom view
       contentView.setImageViewResource(R.id.uploadImage, android.R.drawable.stat_sys_warning);

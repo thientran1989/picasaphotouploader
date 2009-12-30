@@ -16,9 +16,7 @@
  */
 package com.android.picasaphotouploader;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.ListPreference;
 import android.preference.PreferenceManager;
@@ -67,13 +65,13 @@ public class AlbumPreference extends ListPreference
     // if no email and password are set we can't authenticate with google to
     // retrieve list of albums
     if (email.length() == 0 || password.length() == 0) {
-      ShowMessage("Set e-mail and password first.");
+      Utils.textDialog(getContext(), "Notification", "Set e-mail and password first.");
       return;
     }
 
     // check if we have internet connection to retrieve albums
     if (!CheckInternet.getInstance().canConnect(getContext(), prefs)) {
-      ShowMessage("Can't connect to internet to get Picasa albums.\n\nEither internet is down or your connection in this application is set to allow Wi-Fi only.");
+      Utils.textDialog(getContext(), "Notification", "Can't connect to internet to get Picasa albums.\n\nEither internet is down or your connection in this application is set to allow Wi-Fi only.");
       return;
     }
 
@@ -83,17 +81,16 @@ public class AlbumPreference extends ListPreference
 
     // if authentication string is null it means we failed authentication
     if (auth == null) {
-      ShowMessage("Google authentication failed.\n\nCheck your e-mail and password.");
+      Utils.textDialog(getContext(), "Notification", "Google authentication failed.\n\nCheck your e-mail and password.");
       return;
     }
 
     // get picasa album list
     AlbumList list = new AlbumList(auth, email);
-    boolean found  = list.fetchAlbumList();
 
     // check if any albums were found
-    if (found == false) {
-      ShowMessage("No Picasa albums found. Create one first.");
+    if (list.fetchAlbumList() == false) {
+      Utils.textDialog(getContext(), "Notification", "No Picasa albums found. Create one first.");
       return;
     }
 
@@ -102,30 +99,8 @@ public class AlbumPreference extends ListPreference
     setEntries(list.getAlbumNames());
     setEntryValues(list.getAlbumIds());
 
+    // call parent function to show preference dialog
     showDialog(null);
-  }
-
-  /**
-   * Helper function to show dialog when condition fails
-   * 
-   * @param message Message to show to user in dialog
-   */
-  private void ShowMessage(String message)
-  {
-    new AlertDialog
-      .Builder(this.getContext())
-      .setMessage(message)
-      .setTitle("Notification")
-      .setNeutralButton("OK",
-        new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which)
-          {
-            dialog.cancel();
-          }
-        }
-      )
-      .show();
   }
 }
 

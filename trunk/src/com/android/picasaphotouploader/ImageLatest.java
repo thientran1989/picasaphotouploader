@@ -55,7 +55,7 @@ public class ImageLatest
    */
   public int getId()
   {
-    String[] columns = new String[]{ Media._ID };
+    String[] columns = new String[]{ Media._ID, Media.ORIENTATION };
     Cursor cursor    = application.managedQuery(Media.EXTERNAL_CONTENT_URI, columns, null, null, Media._ID+" DESC");
 
     // check if table has any rows at all
@@ -68,8 +68,17 @@ public class ImageLatest
     int maxId = application.getMaxId();
 
     // if id from db is equal or lower to stored id it means user changed or 
-    // deleted somewhere in table, so store the new highest id and return
+    // deleted somewhere in table so store the new highest id and return
     if (latestId <= maxId) {
+      application.setMaxId(latestId);
+      return -1;
+    }
+
+    // If orientation is null it means new image is not a photo but we will
+    // store highest id and return
+    String orientation = cursor.getString(cursor.getColumnIndex(Media.ORIENTATION));
+
+    if (orientation == null) {
       application.setMaxId(latestId);
       return -1;
     }
@@ -82,7 +91,7 @@ public class ImageLatest
   }
 
   /**
-   * The problem is that this observer is invoked multiple times when a photo is
+   * The problem is that the observer is invoked multiple times when a photo is
    * taken with the camera. It could be that on the first time the observer is
    * triggered the record is already in the database but the file isn't
    * completely written to the sdcard. That's why we need to check if the field
