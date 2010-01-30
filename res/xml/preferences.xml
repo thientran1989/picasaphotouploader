@@ -9,8 +9,8 @@
   />
   <EditTextPreference
     android:key="email"
-    android:title="Google e-mail"
-    android:dialogTitle="Enter your google e-mail"
+    android:title="Google username"
+    android:dialogTitle="Enter your google username"
     android:singleLine="true"
   />
   <EditTextPreference
