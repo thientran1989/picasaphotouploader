@@ -65,7 +65,7 @@ public class AlbumPreference extends ListPreference
     // if no email and password are set we can't authenticate with google to
     // retrieve list of albums
     if (email.length() == 0 || password.length() == 0) {
-      Utils.textDialog(getContext(), "Notification", "Set e-mail and password first.");
+      Utils.textDialog(getContext(), "Notification", "Set username and password first.");
       return;
     }
 
